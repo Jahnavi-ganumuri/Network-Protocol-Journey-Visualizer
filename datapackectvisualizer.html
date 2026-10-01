@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Network Protocol Journey Visualizer</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #0b1120;
+    color: #e5e7eb;
+    min-height: 100vh;
+}
+
+/* ================= HEADER ================= */
+
+.header {
+    background: linear-gradient(135deg, #111827, #172554);
+    padding: 28px 20px;
+    text-align: center;
+    border-bottom: 1px solid #26324a;
+}
+
+.header h1 {
+    font-size: 34px;
+    color: #60a5fa;
+    margin-bottom: 8px;
+}
+
+.header p {
+    color: #9ca3af;
+    font-size: 15px;
+}
+
+/* ================= MAIN ================= */
+
+.container {
+    width: 92%;
+    max-width: 1250px;
+    margin: 25px auto;
+}
+
+/* ================= CONTROL PANEL ================= */
+
+.control-panel {
+    background: #111827;
+    border: 1px solid #26324a;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 25px;
+}
+
+.control-panel h2 {
+    color: #93c5fd;
+    margin-bottom: 15px;
+}
+
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+button {
+    border: none;
+    border-radius: 8px;
+    padding: 12px 22px;
+    font-size: 15px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+button:hover {
+    transform: translateY(-2px);
+}
+
+.start-btn {
+    background: #22c55e;
+    color: white;
+}
+
+.pause-btn {
+    background: #f59e0b;
+    color: white;
+}
+
+.reset-btn {
+    background: #ef4444;
+    color: white;
+}
+
+.protocol-select {
+    padding: 11px 15px;
+    border-radius: 8px;
+    border: 1px solid #374151;
+    background: #1f2937;
+    color: white;
+    font-size: 15px;
+}
+
+/* ================= JOURNEY ================= */
+
+.journey {
+    background: #111827;
+    border: 1px solid #26324a;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 25px;
+}
+
+.journey h2 {
+    text-align: center;
+    color: #93c5fd;
+    margin-bottom: 25px;
+}
+
+.network-area {
+    position: relative;
+    min-height: 280px;
+    overflow: hidden;
+}
+
+.connection-line {
+    position: absolute;
+    top: 115px;
+    left: 10%;
+    right: 10%;
+    height: 5px;
+    background: #334155;
+    border-radius: 10px;
+}
+
+.connection-line::after {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        #60a5fa,
+        transparent
+    );
+    animation: networkGlow 2s linear infinite;
+}
+
+@keyframes networkGlow {
+    from {
+        transform: translateX(-100%);
+    }
+
+    to {
+        transform: translateX(100%);
+    }
+}
+
+/* ================= DEVICES ================= */
+
+.device {
+    position: absolute;
+    top: 65px;
+    width: 150px;
+    text-align: center;
+    z-index: 5;
+}
+
+.device-icon {
+    width: 75px;
+    height: 75px;
+    margin: auto;
+    border-radius: 50%;
+    background: #1e293b;
+    border: 3px solid #60a5fa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 32px;
+}
+
+.device h3 {
+    margin-top: 10px;
+    color: #dbeafe;
+}
+
+.device p {
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.sender {
+    left: 2%;
+}
+
+.router {
+    left: 42%;
+}
+
+.server {
+    right: 2%;
+}
+
+/* ================= PACKET ================= */
+
+.packet {
+    position: absolute;
+    top: 105px;
+    left: 7%;
+    width: 55px;
+    height: 55px;
+    border-radius: 12px;
+    background: #2563eb;
+    border: 3px solid #93c5fd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    z-index: 10;
+    box-shadow: 0 0 20px rgba(59,130,246,0.6);
+    transition: left 1s linear;
+}
+
+.packet-label {
+    position: absolute;
+    top: -28px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    white-space: nowrap;
+    color: #93c5fd;
+}
+
+/* ================= STATUS ================= */
+
+.status-box {
+    text-align: center;
+    background: #0f172a;
+    border: 1px solid #334155;
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 15px;
+}
+
+.status-title {
+    color: #60a5fa;
+    font-size: 14px;
+}
+
+.status-text {
+    margin-top: 6px;
+    font-size: 18px;
+    color: white;
+}
+
+/* ================= INFO GRID ================= */
+
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.info-card {
+    background: #111827;
+    border: 1px solid #26324a;
+    border-radius: 15px;
+    padding: 22px;
+}
+
+.info-card h2 {
+    color: #93c5fd;
+    margin-bottom: 18px;
+}
+
+.info-card p {
+    color: #cbd5e1;
+    line-height: 1.6;
+}
+
+.protocol-list {
+    list-style: none;
+}
+
+.protocol-list li {
+    padding: 13px;
+    background: #1e293b;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    border-left: 4px solid #3b82f6;
+}
+
+.protocol-list strong {
+    color: #60a5fa;
+}
+
+/* ================= LAYERS ================= */
+
+.layers {
+    display: grid;
+    gap: 9px;
+}
+
+.layer {
+    padding: 13px 15px;
+    border-radius: 8px;
+    background: #1e293b;
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.layer-name {
+    font-weight: bold;
+    color: #bfdbfe;
+}
+
+.layer-protocol {
+    color: #94a3b8;
+}
+
+/* ================= LOG ================= */
+
+.log {
+    max-height: 230px;
+    overflow-y: auto;
+    background: #020617;
+    padding: 15px;
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 13px;
+}
+
+.log-entry {
+    margin-bottom: 8px;
+    color: #93c5fd;
+}
+
+/* ================= PROGRESS ================= */
+
+.progress-container {
+    margin-top: 20px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 10px;
+    background: #1e293b;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress {
+    width: 0%;
+    height: 100%;
+    background: #3b82f6;
+    transition: width 1s linear;
+}
+
+/* ================= FOOTER ================= */
+
+.footer {
+    text-align: center;
+    padding: 30px 10px;
+    color: #64748b;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 800px) {
+
+    .header h1 {
+        font-size: 25px;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .network-area {
+        min-height: 430px;
+    }
+
+    .connection-line {
+        top: 50px;
+        left: 50%;
+        right: auto;
+        width: 5px;
+        height: 300px;
+    }
+
+    .connection-line::after {
+        width: 100%;
+        height: 100%;
+    }
+
+    .sender {
+        top: 10px;
+        left: calc(50% - 75px);
+    }
+
+    .router {
+        top: 145px;
+        left: calc(50% - 75px);
+    }
+
+    .server {
+        top: 285px;
+        right: auto;
+        left: calc(50% - 75px);
+    }
+
+    .packet {
+        top: 48px;
+        left: calc(50% - 27px);
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- ================= HEADER ================= -->
+
+<header class="header">
+
+    <h1>🌐 Network Protocol Journey Visualizer</h1>
+
+    <p>
+        Visualize how a data packet travels from a sender to a destination
+        through different network protocols.
+    </p>
+
+</header>
+
+
+<main class="container">
+
+<!-- ================= CONTROLS ================= -->
+
+<section class="control-panel">
+
+    <h2>🎮 Simulation Controls</h2>
+
+    <div class="controls">
+
+        <button class="start-btn" onclick="startJourney()">
+            ▶ Start Journey
+        </button>
+
+        <button class="pause-btn" onclick="pauseJourney()">
+            ⏸ Pause
+        </button>
+
+        <button class="reset-btn" onclick="resetJourney()">
+            ↻ Reset
+        </button>
+
+        <select
+            id="protocolSelect"
+            class="protocol-select"
+            onchange="changeProtocol()"
+        >
+
+            <option value="HTTPS">HTTPS</option>
+            <option value="HTTP">HTTP</option>
+            <option value="TCP">TCP</option>
+            <option value="UDP">UDP</option>
+
+        </select>
+
+    </div>
+
+</section>
+
+
+<!-- ================= JOURNEY VISUALIZATION ================= -->
+
+<section class="journey">
+
+    <h2>📦 Data Packet Journey</h2>
+
+    <div class="network-area">
+
+        <div class="connection-line"></div>
+
+        <!-- Sender -->
+
+        <div class="device sender">
+
+            <div class="device-icon">
+                💻
+            </div>
+
+            <h3>Sender</h3>
+
+            <p>Client Computer</p>
+
+        </div>
+
+
+        <!-- Router -->
+
+        <div class="device router">
+
+            <div class="device-icon">
+                📡
+            </div>
+
+            <h3>Router</h3>
+
+            <p>Network Gateway</p>
+
+        </div>
+
+
+        <!-- Server -->
+
+        <div class="device server">
+
+            <div class="device-icon">
+                🖥️
+            </div>
+
+            <h3>Server</h3>
+
+            <p>Destination</p>
+
+        </div>
+
+
+        <!-- Packet -->
+
+        <div id="packet" class="packet">
+
+            📦
+
+            <div class="packet-label">
+                DATA
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Status -->
+
+    <div class="status-box">
+
+        <div class="status-title">
+            CURRENT STATUS
+        </div>
+
+        <div id="statusText" class="status-text">
+            Ready to begin simulation
+        </div>
+
+    </div>
+
+
+    <!-- Progress -->
+
+    <div class="progress-container">
+
+        <div class="progress-bar">
+
+            <div id="progress" class="progress"></div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= INFORMATION ================= -->
+
+<div class="info-grid">
+
+
+<!-- PROTOCOL INFORMATION -->
+
+<section class="info-card">
+
+    <h2>🔐 Selected Protocol</h2>
+
+    <p id="protocolDescription">
+
+        HTTPS is a secure application-layer protocol used to
+        transfer web data between a client and server.
+
+    </p>
+
+    <br>
+
+    <ul class="protocol-list">
+
+        <li>
+            <strong>Layer:</strong>
+            <span id="protocolLayer">Application Layer</span>
+        </li>
+
+        <li>
+            <strong>Purpose:</strong>
+            <span id="protocolPurpose">
+                Secure web communication
+            </span>
+        </li>
+
+        <li>
+            <strong>Data:</strong>
+            <span id="protocolData">
+                Encrypted HTTP messages
+            </span>
+        </li>
+
+    </ul>
+
+</section>
+
+
+<!-- OSI LAYERS -->
+
+<section class="info-card">
+
+    <h2>📚 Network Layers</h2>
+
+    <div class="layers">
+
+        <div class="layer">
+
+            <span class="layer-name">
+                Application
+            </span>
+
+            <span class="layer-protocol">
+                HTTP / HTTPS
+            </span>
+
+        </div>
+
+
+        <div class="layer">
+
+            <span class="layer-name">
+                Transport
+            </span>
+
+            <span class="layer-protocol">
+                TCP / UDP
+            </span>
+
+        </div>
+
+
+        <div class="layer">
+
+            <span class="layer-name">
+                Internet
+            </span>
+
+            <span class="layer-protocol">
+                IP
+            </span>
+
+        </div>
+
+
+        <div class="layer">
+
+            <span class="layer-name">
+                Network Access
+            </span>
+
+            <span class="layer-protocol">
+                Ethernet / Wi-Fi
+            </span>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- JOURNEY STEPS -->
+
+<section class="info-card">
+
+    <h2>🧭 Journey Steps</h2>
+
+    <ul class="protocol-list">
+
+        <li>
+            <strong>1.</strong>
+            Application creates the data
+        </li>
+
+        <li>
+            <strong>2.</strong>
+            Transport layer segments the data
+        </li>
+
+        <li>
+            <strong>3.</strong>
+            IP adds source and destination addresses
+        </li>
+
+        <li>
+            <strong>4.</strong>
+            Network access sends the packet
+        </li>
+
+        <li>
+            <strong>5.</strong>
+            Router forwards the packet
+        </li>
+
+        <li>
+            <strong>6.</strong>
+            Server receives and processes the packet
+        </li>
+
+    </ul>
+
+</section>
+
+
+<!-- EVENT LOG -->
+
+<section class="info-card">
+
+    <h2>📋 Simulation Log</h2>
+
+    <div id="log" class="log">
+
+        <div class="log-entry">
+            [SYSTEM] Waiting for simulation...
+        </div>
+
+    </div>
+
+</section>
+
+</div>
+
+</main>
+
+
+<footer class="footer">
+
+    Network Protocol Journey Visualizer |
+    Computer Networks Mini Project
+
+</footer>
+
+
+<script>
+
+/* =========================================
+   PROTOCOL INFORMATION
+========================================= */
+
+const protocols = {
+
+    HTTPS: {
+
+        description:
+        "HTTPS is a secure application-layer protocol used to transfer web data between a client and server.",
+
+        layer:
+        "Application Layer",
+
+        purpose:
+        "Secure web communication",
+
+        data:
+        "Encrypted HTTP messages"
+
+    },
+
+    HTTP: {
+
+        description:
+        "HTTP is an application-layer protocol used for communication between web browsers and web servers.",
+
+        layer:
+        "Application Layer",
+
+        purpose:
+        "Web communication",
+
+        data:
+        "HTTP request and response"
+
+    },
+
+    TCP: {
+
+        description:
+        "TCP is a reliable transport-layer protocol that establishes a connection and delivers data in the correct order.",
+
+        layer:
+        "Transport Layer",
+
+        purpose:
+        "Reliable data delivery",
+
+        data:
+        "TCP segments"
+
+    },
+
+    UDP: {
+
+        description:
+        "UDP is a connectionless transport-layer protocol designed for fast communication with low overhead.",
+
+        layer:
+        "Transport Layer",
+
+        purpose:
+        "Fast data delivery",
+
+        data:
+        "UDP datagrams"
+
+    }
+
+};
+
+
+/* =========================================
+   VARIABLES
+========================================= */
+
+let currentStep = 0;
+
+let journeyTimer = null;
+
+let running = false;
+
+const packet =
+    document.getElementById("packet");
+
+const progress =
+    document.getElementById("progress");
+
+const statusText =
+    document.getElementById("statusText");
+
+const log =
+    document.getElementById("log");
+
+
+/* =========================================
+   JOURNEY STEPS
+========================================= */
+
+const steps = [
+
+    {
+        position: 7,
+        text: "Application creates the data",
+        log: "[APPLICATION] Data created by application"
+    },
+
+    {
+        position: 27,
+        text: "Transport layer adds TCP/UDP information",
+        log: "[TRANSPORT] Segment created"
+    },
+
+    {
+        position: 47,
+        text: "IP adds source and destination addresses",
+        log: "[IP] Packet addressing completed"
+    },
+
+    {
+        position: 67,
+        text: "Router receives and forwards the packet",
+        log: "[ROUTER] Packet forwarded"
+    },
+
+    {
+        position: 87,
+        text: "Server receives the packet",
+        log: "[SERVER] Packet received successfully"
+    }
+
+];
+
+
+/* =========================================
+   START JOURNEY
+========================================= */
+
+function startJourney() {
+
+    if (running) {
+        return;
+    }
+
+    running = true;
+
+    addLog("[SYSTEM] Journey started");
+
+    runNextStep();
+
+}
+
+
+/* =========================================
+   RUN NEXT STEP
+========================================= */
+
+function runNextStep() {
+
+    if (!running) {
+        return;
+    }
+
+    if (currentStep >= steps.length) {
+
+        running = false;
+
+        statusText.textContent =
+            "✅ Journey completed successfully!";
+
+        progress.style.width = "100%";
+
+        addLog(
+            "[SYSTEM] Data successfully reached destination"
+        );
+
+        return;
+
+    }
+
+
+    const step = steps[currentStep];
+
+    packet.style.left =
+        step.position + "%";
+
+    statusText.textContent =
+        step.text;
+
+    progress.style.width =
+        ((currentStep + 1) / steps.length * 100) + "%";
+
+    addLog(step.log);
+
+    currentStep++;
+
+    journeyTimer =
+        setTimeout(runNextStep, 1500);
+
+}
+
+
+/* =========================================
+   PAUSE
+========================================= */
+
+function pauseJourney() {
+
+    if (!running) {
+        return;
+    }
+
+    running = false;
+
+    clearTimeout(journeyTimer);
+
+    statusText.textContent =
+        "⏸ Journey paused";
+
+    addLog("[SYSTEM] Journey paused");
+
+}
+
+
+/* =========================================
+   RESET
+========================================= */
+
+function resetJourney() {
+
+    running = false;
+
+    clearTimeout(journeyTimer);
+
+    currentStep = 0;
+
+    packet.style.left = "7%";
+
+    progress.style.width = "0%";
+
+    statusText.textContent =
+        "Ready to begin simulation";
+
+    log.innerHTML = `
+        <div class="log-entry">
+            [SYSTEM] Simulation reset
+        </div>
+    `;
+
+}
+
+
+/* =========================================
+   CHANGE PROTOCOL
+========================================= */
+
+function changeProtocol() {
+
+    const selected =
+        document.getElementById("protocolSelect").value;
+
+    const data =
+        protocols[selected];
+
+    document.getElementById(
+        "protocolDescription"
+    ).textContent =
+        data.description;
+
+    document.getElementById(
+        "protocolLayer"
+    ).textContent =
+        data.layer;
+
+    document.getElementById(
+        "protocolPurpose"
+    ).textContent =
+        data.purpose;
+
+    document.getElementById(
+        "protocolData"
+    ).textContent =
+        data.data;
+
+    addLog(
+        "[PROTOCOL] Selected " + selected
+    );
+
+}
+
+
+/* =========================================
+   LOG FUNCTION
+========================================= */
+
+function addLog(message) {
+
+    const entry =
+        document.createElement("div");
+
+    entry.className =
+        "log-entry";
+
+    const time =
+        new Date().toLocaleTimeString();
+
+    entry.textContent =
+        "[" + time + "] " + message;
+
+    log.appendChild(entry);
+
+    log.scrollTop =
+        log.scrollHeight;
+
+}
+
+</script>
+
+</body>
+</html>
